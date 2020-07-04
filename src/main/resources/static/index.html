@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat App</title>
+</head>
+<body>
+<h1>Chat App</h1>
+<div id="chat-message-holder"></div>
+<input id="message-input"/>
+<button id="send-button">Send message</button>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
+<script>
+    let socket = new SockJS("/stomp-endpoint")
+    let stompClient = Stomp.over(socket)
+
+    stompClient.connect({}, function(frame) {
+        stompClient.subscribe('/topic/chat', function(message) {
+            let paragraph = document.createElement('p')
+            paragraph.textContent = message.body
+
+            let textHolder = document.getElementById('chat-message-holder')
+            textHolder.appendChild(paragraph)
+        })
+    }, function(error) {
+        console.log('STOMP error: ' + error)
+    })
+
+    let sendButton = document.getElementById('send-button')
+    sendButton.addEventListener('click', function() {
+        let message = document.getElementById('message-input').value
+        stompClient.send('/app/chat', {}, message)
+    })
+
+
+</script>
+</body>
+</html>
